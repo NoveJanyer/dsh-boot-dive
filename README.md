@@ -108,6 +108,14 @@ ctx.on('webserver/index-inject', (table) => {
 
 ## 三、安装
 
+仓库地址：<https://github.com/NoveJanyer/dsh-boot-dive>
+
+```powershell
+git clone https://github.com/NoveJanyer/dsh-boot-dive.git
+```
+
+也可以直接在 GitHub 页面 **Code → Download ZIP**，或从 **Releases** 下载打包好的压缩包。拿到目录后按下面的桌面版步骤安装。
+
 ### 桌面版（一键）
 
 1. **完全退出** DeepSeek Harness（窗口 + 托盘，任务管理器里确认没有 `DeepSeek Harness` 进程）；
@@ -136,6 +144,12 @@ dsh --profile <profile> --no-open
 ```
 
 Windows 路径带空格时不要用 `dsh plugin add <路径>`（会被 cmd 切碎），手写 `package.json` 再 `install` 最稳。
+
+也可以让 DSH 直接从 GitHub 拉取（需要能访问 GitHub；桌面版 profile 若被应用独占管理，可能要用应用内的插件页）：
+
+```powershell
+dsh plugin --profile desktop add github:NoveJanyer/dsh-boot-dive
+```
 
 ### 只想暂停，不卸载
 

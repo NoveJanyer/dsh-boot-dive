@@ -3,6 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "description": "DeepSeek Harness boot splash: an 8s inline film that plays to the end, holds its last frame, then fades into the app. Optional pure-CSS mode.",
+  "author": "NoveJanyer",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoveJanyer/dsh-boot-dive.git"
+  },
+  "homepage": "https://github.com/NoveJanyer/dsh-boot-dive",
+  "bugs": {
+    "url": "https://github.com/NoveJanyer/dsh-boot-dive/issues"
+  },
   "type": "module",
   "main": "lib/index.js",
   "exports": {
