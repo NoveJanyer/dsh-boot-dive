@@ -1,0 +1,248 @@
+/* ==========================================================================
+   dsh-boot-dive — video mode (默认)
+   The film is inlined as a data URI, muted, and crossfades into the app over
+   its last __TAIL_MS__ ms. Everything is scoped under [data-dsbdv].
+   ========================================================================== */
+
+[data-dsbdv] {
+	--dsbdv-accent: __ACCENT__;
+	--dsbdv-ice: #9beeff;
+	--dsbdv-text: #edf3ff;
+	--dsbdv-dim: rgba(214, 228, 255, 0.6);
+	--dsbdv-faint: rgba(190, 210, 245, 0.34);
+	--dsbdv-mono: "Cascadia Code", "JetBrains Mono", Consolas, "SFMono-Regular", ui-monospace, monospace;
+	--dsbdv-sans: "Segoe UI Variable Display", "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	overflow: hidden;
+	background: #020308;
+	color: var(--dsbdv-text);
+	font-family: var(--dsbdv-sans);
+	-webkit-font-smoothing: antialiased;
+	isolation: isolate;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	transition: opacity __TAIL_MS__ms cubic-bezier(0.4, 0, 0.2, 1);
+	animation: dsbdv-failsafe __FAILSAFE_MS__ms linear forwards;
+}
+
+[data-dsbdv],
+[data-dsbdv] *,
+[data-dsbdv] *::before,
+[data-dsbdv] *::after {
+	box-sizing: border-box;
+}
+
+[data-dsbdv][data-dsbdv-exit] {
+	opacity: 0;
+	pointer-events: none;
+}
+
+[data-dsbdv][data-dsbdv-exit] .dsbdv-video {
+	transform: scale(1.015);
+	transition: transform __TAIL_MS__ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes dsbdv-failsafe {
+	0%,
+	99.9% {
+		visibility: visible;
+	}
+	100% {
+		visibility: hidden;
+		pointer-events: none;
+	}
+}
+
+/* -------------------------------------------------------------------- film */
+
+.dsbdv-video {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	object-fit: cover;
+	object-position: 50% 46%;
+	background: #020308;
+	transform: scale(1.002);
+	will-change: transform;
+}
+
+[data-dsbdv][data-dsbdv-error] .dsbdv-video {
+	display: none;
+}
+
+[data-dsbdv][data-dsbdv-error] {
+	background:
+		radial-gradient(90% 70% at 50% 42%, rgba(38, 66, 140, 0.45), transparent 70%),
+		#020308;
+}
+
+/* Vignette + top/bottom scrims give the HUD something to sit on. */
+.dsbdv-veil {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(125% 95% at 50% 44%, rgba(0, 0, 0, 0) 38%, rgba(0, 0, 0, 0.52) 100%),
+		linear-gradient(to top, rgba(2, 3, 8, 0.86) 0%, rgba(2, 3, 8, 0.36) 14%, rgba(2, 3, 8, 0) 32%),
+		linear-gradient(to bottom, rgba(2, 3, 8, 0.55) 0%, rgba(2, 3, 8, 0) 18%);
+	pointer-events: none;
+}
+
+.dsbdv-scan {
+	position: absolute;
+	inset: 0;
+	background: repeating-linear-gradient(to bottom, rgba(255, 255, 255, 0.022) 0, rgba(255, 255, 255, 0.022) 1px, transparent 1px, transparent 3px);
+	opacity: 0.55;
+	mix-blend-mode: overlay;
+	pointer-events: none;
+}
+
+/* ------------------------------------------------------------------ bottom */
+
+.dsbdv-readout {
+	position: absolute;
+	right: clamp(24px, 4.6vw, 66px);
+	bottom: clamp(26px, 4.6vh, 46px);
+	display: flex;
+	align-items: flex-end;
+	gap: 18px;
+	opacity: 0;
+	animation: dsbdv-fade 900ms ease-out 800ms forwards;
+}
+
+.dsbdv-phase {
+	padding-bottom: 7px;
+	font-family: var(--dsbdv-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.24em;
+	color: var(--dsbdv-dim);
+}
+
+.dsbdv-pct {
+	font-family: var(--dsbdv-sans);
+	font-size: clamp(30px, 3vw, 46px);
+	font-weight: 200;
+	line-height: 0.9;
+	letter-spacing: -0.02em;
+	color: #f5f9ff;
+	font-variant-numeric: tabular-nums;
+	text-shadow: 0 0 24px rgba(120, 180, 255, 0.32);
+}
+
+.dsbdv-pct i {
+	margin-left: 2px;
+	font-style: normal;
+	font-size: 0.44em;
+	color: var(--dsbdv-faint);
+}
+
+.dsbdv-skip {
+	position: absolute;
+	left: 50%;
+	bottom: clamp(22px, 4vh, 40px);
+	transform: translateX(-50%);
+	font-family: var(--dsbdv-mono);
+	font-size: 9px;
+	letter-spacing: 0.3em;
+	color: rgba(205, 222, 255, 0.34);
+	white-space: nowrap;
+	opacity: 0;
+	animation: dsbdv-fade 800ms ease-out 2200ms forwards;
+}
+
+/* Autoplay with sound was refused: one click unlocks it, so make the ask visible. */
+[data-dsbdv][data-dsbdv-muted] .dsbdv-skip {
+	padding: 8px 16px;
+	border: 1px solid rgba(150, 195, 255, 0.28);
+	border-radius: 999px;
+	background: rgba(8, 12, 24, 0.58);
+	color: rgba(238, 245, 255, 0.88);
+	box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(8px);
+}
+
+.dsbdv-meter {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 2px;
+	background: rgba(120, 160, 230, 0.16);
+}
+
+.dsbdv-meter i {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: linear-gradient(90deg, rgba(91, 140, 255, 0.5) 0%, var(--dsbdv-accent) 55%, var(--dsbdv-ice) 100%);
+	box-shadow: 0 0 14px 1px rgba(120, 200, 255, 0.6);
+	transition: width 220ms linear;
+}
+
+.dsbdv-flash {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(circle at 50% 46%, rgba(255, 255, 255, 0.82) 0%, rgba(150, 200, 255, 0.26) 26%, rgba(2, 3, 8, 0) 62%);
+	mix-blend-mode: screen;
+	opacity: 0;
+	pointer-events: none;
+}
+
+[data-dsbdv][data-dsbdv-exit] .dsbdv-flash {
+	animation: dsbdv-flash 720ms ease-out forwards;
+}
+
+@keyframes dsbdv-flash {
+	0% {
+		opacity: 0;
+	}
+	12% {
+		opacity: 0.5;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+/* --------------------------------------------------------------- utilities */
+
+@keyframes dsbdv-fade {
+	to {
+		opacity: 1;
+	}
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 820px) {
+	.dsbdv-skip {
+		bottom: clamp(74px, 10vh, 96px);
+	}
+	.dsbdv-phase {
+		display: none;
+	}
+}
+
+/* ---------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+	[data-dsbdv] {
+		animation: dsbdv-failsafe __FAILSAFE_MS__ms linear forwards;
+	}
+	.dsbdv-readout,
+	.dsbdv-skip {
+		animation: none !important;
+		opacity: 1;
+	}
+	[data-dsbdv][data-dsbdv-exit] .dsbdv-video {
+		transform: none;
+		transition: none;
+	}
+	[data-dsbdv][data-dsbdv-exit] .dsbdv-flash {
+		animation: none;
+	}
+}

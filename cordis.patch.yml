@@ -1,0 +1,6 @@
+# dsh-boot-dive — inserts the boot splash into a profile's layer stack.
+# To silence it without uninstalling, add `disabled: true` to this row in the
+# profile's own cordis.patch.yml (the loader re-applies that choice on boot).
+- insert:
+    - id: dsh-boot-dive
+      name: 'dsh-boot-dive'

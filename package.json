@@ -1,0 +1,39 @@
+{
+  "name": "dsh-boot-dive",
+  "version": "1.0.0",
+  "private": true,
+  "description": "DeepSeek Harness boot splash: an 8s inline film that plays to the end, holds its last frame, then fades into the app. Optional pure-CSS mode.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg",
+    "./package.json": "./package.json"
+  },
+  "icon": "./icon.svg",
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "files": [
+    "lib",
+    "assets",
+    "locale",
+    "docs",
+    "icon.svg",
+    "cordis.patch.yml",
+    "preview",
+    "tools",
+    "*.cmd",
+    "README.md",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "node tools/build-preview.mjs",
+    "check": "node tools/check.mjs"
+  },
+  "license": "MIT"
+}

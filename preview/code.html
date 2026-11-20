@@ -1,0 +1,1218 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>dsh-boot-dive · 纯代码版预览</title>
+<style>
+
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body {
+	margin: 0;
+	background: #f7f8fb;
+	color: #1d2433;
+	font-family: "Segoe UI Variable Display", "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+}
+#root { height: 100%; }
+.fake-boot { height: 100%; display: grid; place-items: center; color: #6b7488; font-size: 13px; letter-spacing: .12em; }
+.app { display: flex; height: 100%; background: #fbfcfe; }
+.side {
+	width: 262px;
+	flex: 0 0 262px;
+	background: #f2f4f8;
+	border-right: 1px solid #e4e8f0;
+	padding: 18px 14px;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+.side-brand { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600; }
+.side-brand .mark { width: 26px; height: 26px; border-radius: 8px; background: linear-gradient(145deg, #4d6bfe, #7aa2ff); color: #fff; display: grid; place-items: center; font-size: 10px; letter-spacing: .04em; }
+.new { all: unset; cursor: pointer; background: #fff; border: 1px solid #e2e7f0; border-radius: 10px; padding: 9px 12px; font-size: 12.5px; color: #31405e; box-shadow: 0 1px 2px rgba(24, 38, 72, .04); }
+.new:hover { border-color: #c9d6ee; }
+.side-label { font-size: 10.5px; letter-spacing: .12em; color: #98a1b5; margin-top: 6px; }
+.side-item { padding: 8px 10px; border-radius: 8px; font-size: 12.5px; color: #4a5568; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.side-item.active { background: #e7ecf7; color: #22304d; font-weight: 600; }
+.side-foot { margin-top: auto; font-size: 11.5px; color: #8d96a8; display: flex; gap: 12px; }
+.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.top { height: 52px; display: flex; align-items: center; justify-content: space-between; padding: 0 26px; border-bottom: 1px solid #eef1f6; font-size: 12px; color: #7c8699; }
+.pill { border: 1px solid #e2e7f0; background: #fff; border-radius: 999px; padding: 4px 10px; font-size: 10.5px; letter-spacing: .06em; color: #5a6a86; }
+.empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; padding: 24px; text-align: center; }
+.empty .glyph { width: 64px; height: 64px; border-radius: 20px; display: grid; place-items: center; color: #fff; font-size: 17px; font-weight: 600; letter-spacing: .02em; background: linear-gradient(145deg, #4d6bfe, #83a8ff); box-shadow: 0 18px 40px -18px rgba(77, 107, 254, .65); }
+.empty h1 { margin: 6px 0 0; font-size: clamp(22px, 2.4vw, 30px); font-weight: 600; letter-spacing: .01em; color: #1b2538; }
+.empty p { margin: 0; font-size: 12.5px; color: #8b95a8; }
+.composer { width: min(620px, 72vw); margin-top: 20px; background: #fff; border: 1px solid #e2e7f0; border-radius: 16px; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; color: #9aa3b4; font-size: 13px; box-shadow: 0 10px 30px -22px rgba(24, 38, 72, .35); }
+.composer kbd { font-family: "Cascadia Code", Consolas, monospace; font-size: 10px; color: #8792a6; border: 1px solid #e6eaf2; border-radius: 6px; padding: 3px 6px; background: #f7f9fc; }
+
+</style>
+<style>
+/* ==========================================================================
+   dsh-boot-dive 鈥?娣辨綔鍚姩搴忓垪 / DIVE SEQUENCE
+   Pure CSS. No images, no webfonts, no network requests.
+   Everything is scoped under [data-dsh-boot-dive] so the stylesheet can stay
+   in <head> after the overlay is removed without touching the app.
+   ========================================================================== */
+
+[data-dsh-boot-dive] {
+	--dsbd-accent: #5b8cff;
+	--dsbd-ice: #9beeff;
+	--dsbd-ink: #03060f;
+	--dsbd-text: #e9f1ff;
+	--dsbd-dim: rgba(213, 228, 255, 0.62);
+	--dsbd-faint: rgba(190, 210, 245, 0.34);
+	--dsbd-sans: "Segoe UI Variable Display", "Segoe UI", "Microsoft YaHei", "PingFang SC", system-ui, sans-serif;
+	--dsbd-mono: "Cascadia Code", "JetBrains Mono", Consolas, "SFMono-Regular", ui-monospace, monospace;
+
+	position: fixed;
+	inset: 0;
+	z-index: 100000;
+	overflow: hidden;
+	background:
+		radial-gradient(115% 80% at 50% 4%, rgba(38, 62, 132, 0.55) 0%, rgba(12, 20, 44, 0.62) 40%, rgba(3, 6, 15, 0) 74%),
+		radial-gradient(95% 65% at 84% 98%, rgba(20, 58, 98, 0.32) 0%, rgba(4, 8, 20, 0.1) 52%, rgba(3, 6, 15, 0) 72%),
+		#03060f;
+	color: var(--dsbd-text);
+	font-family: var(--dsbd-sans);
+	-webkit-font-smoothing: antialiased;
+	text-rendering: optimizeLegibility;
+	isolation: isolate;
+	cursor: default;
+	user-select: none;
+	-webkit-user-select: none;
+	transition: opacity 640ms cubic-bezier(0.4, 0, 0.2, 1);
+	animation: dsbd-failsafe 15500ms linear forwards;
+}
+
+[data-dsh-boot-dive],
+[data-dsh-boot-dive] *,
+[data-dsh-boot-dive] *::before,
+[data-dsh-boot-dive] *::after {
+	box-sizing: border-box;
+}
+
+/* Exit: started by the handover script, mirrored by the transition above. */
+[data-dsh-boot-dive][data-dsbd-exit] {
+	opacity: 0;
+	pointer-events: none;
+}
+
+[data-dsh-boot-dive][data-dsbd-exit] .dsbd-whale-wrap {
+	transform: scale(1.035);
+	transition: transform 640ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* The failsafe: with every script dead the layer still uncovers the app. */
+@keyframes dsbd-failsafe {
+	0%,
+	99.9% {
+		visibility: visible;
+	}
+	100% {
+		visibility: hidden;
+		pointer-events: none;
+	}
+}
+
+/* ---------------------------------------------------------------- backdrop */
+
+.dsbd-sky {
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.dsbd-aurora {
+	position: absolute;
+	width: 70vmax;
+	height: 42vmax;
+	border-radius: 50%;
+	mix-blend-mode: screen;
+	opacity: 0.5;
+	will-change: transform;
+}
+
+.dsbd-aurora.a1 {
+	left: -18vmax;
+	top: -12vmax;
+	background: radial-gradient(closest-side, rgba(56, 104, 214, 0.34), rgba(56, 104, 214, 0) 70%);
+	animation: dsbd-drift-a 22s ease-in-out infinite alternate;
+}
+
+.dsbd-aurora.a2 {
+	right: -22vmax;
+	bottom: -14vmax;
+	background: radial-gradient(closest-side, rgba(34, 166, 198, 0.22), rgba(34, 166, 198, 0) 70%);
+	animation: dsbd-drift-b 28s ease-in-out infinite alternate;
+}
+
+@keyframes dsbd-drift-a {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+	to {
+		transform: translate3d(7vmax, 4vmax, 0);
+	}
+}
+
+@keyframes dsbd-drift-b {
+	from {
+		transform: translate3d(0, 0, 0);
+	}
+	to {
+		transform: translate3d(-6vmax, -3vmax, 0);
+	}
+}
+
+.dsbd-horizon {
+	position: absolute;
+	left: -10%;
+	right: -10%;
+	top: 54%;
+	height: 28%;
+	background: radial-gradient(58% 100% at 50% 50%, rgba(96, 148, 255, 0.12) 0%, rgba(96, 148, 255, 0.04) 46%, rgba(3, 6, 15, 0) 72%);
+	opacity: 0;
+	animation: dsbd-fade 1800ms ease-out 140ms forwards;
+}
+
+.dsbd-grid {
+	position: absolute;
+	left: -25%;
+	right: -25%;
+	bottom: -18%;
+	height: 62%;
+	background-image:
+		linear-gradient(to right, rgba(110, 150, 230, 0.16) 1px, transparent 1px),
+		linear-gradient(to bottom, rgba(110, 150, 230, 0.13) 1px, transparent 1px);
+	background-size: 64px 64px;
+	transform: perspective(640px) rotateX(66deg);
+	transform-origin: 50% 100%;
+	-webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.18) 48%, transparent 82%);
+	mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.18) 48%, transparent 82%);
+	opacity: 0;
+	animation: dsbd-fade 1800ms ease-out 200ms forwards;
+}
+
+/* ------------------------------------------------------------------ stars */
+
+.dsbd-stars {
+	position: absolute;
+	inset: 0;
+}
+
+.dsbd-stars i {
+	position: absolute;
+	left: var(--x);
+	top: var(--y);
+	width: var(--s, 2px);
+	height: var(--s, 2px);
+	border-radius: 50%;
+	background: #cfe6ff;
+	box-shadow: 0 0 6px 1px rgba(150, 200, 255, 0.55);
+	opacity: 0;
+	animation:
+		dsbd-fade 1200ms ease-out var(--d, 0ms) forwards,
+		dsbd-twinkle var(--t, 4s) ease-in-out calc(var(--d, 0ms) + 1200ms) infinite;
+}
+
+@keyframes dsbd-twinkle {
+	0%,
+	100% {
+		opacity: 0.24;
+	}
+	50% {
+		opacity: 0.8;
+	}
+}
+
+/* ------------------------------------------------------------------- brand */
+
+.dsbd-brand {
+	position: absolute;
+	left: clamp(24px, 4.6vw, 66px);
+	top: clamp(22px, 4.2vh, 48px);
+	display: flex;
+	align-items: center;
+	gap: 13px;
+	opacity: 0;
+	animation: dsbd-fade 900ms ease-out 260ms forwards;
+}
+
+.dsbd-logo {
+	display: grid;
+	place-items: center;
+	width: 34px;
+	height: 34px;
+	border: 1px solid rgba(148, 190, 255, 0.4);
+	border-radius: 9px;
+	background: linear-gradient(145deg, rgba(91, 140, 255, 0.24), rgba(91, 140, 255, 0.04));
+	color: #dceaff;
+	font-family: var(--dsbd-mono);
+	font-size: 12px;
+	letter-spacing: 0.08em;
+	box-shadow: inset 0 0 18px rgba(110, 170, 255, 0.18);
+}
+
+.dsbd-brand-text {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.28em;
+	color: rgba(233, 241, 255, 0.86);
+}
+
+.dsbd-brand-text em {
+	font-style: normal;
+	font-family: var(--dsbd-mono);
+	font-size: 9px;
+	font-weight: 400;
+	letter-spacing: 0.24em;
+	color: var(--dsbd-faint);
+}
+
+.dsbd-selfcheck {
+	position: absolute;
+	right: clamp(24px, 4.6vw, 66px);
+	top: clamp(22px, 4.2vh, 48px);
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	font-family: var(--dsbd-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.22em;
+	color: var(--dsbd-faint);
+	opacity: 0;
+	animation: dsbd-fade 900ms ease-out 420ms forwards;
+}
+
+.dsbd-selfcheck b {
+	color: var(--dsbd-ice);
+	font-weight: 500;
+}
+
+.dsbd-selfcheck .bars {
+	display: inline-flex;
+	gap: 3px;
+}
+
+.dsbd-selfcheck .bars i {
+	width: 12px;
+	height: 3px;
+	border-radius: 2px;
+	background: rgba(120, 200, 255, 0.22);
+	animation: dsbd-check 420ms ease-out forwards;
+}
+
+.dsbd-selfcheck .bars i:nth-child(1) {
+	animation-delay: 1500ms;
+}
+.dsbd-selfcheck .bars i:nth-child(2) {
+	animation-delay: 1750ms;
+}
+.dsbd-selfcheck .bars i:nth-child(3) {
+	animation-delay: 2000ms;
+}
+.dsbd-selfcheck .bars i:nth-child(4) {
+	animation-delay: 2250ms;
+}
+
+@keyframes dsbd-check {
+	to {
+		background: var(--dsbd-ice);
+		box-shadow: 0 0 8px rgba(143, 240, 255, 0.8);
+	}
+}
+
+/* -------------------------------------------------------------------- hero */
+
+.dsbd-hero {
+	position: absolute;
+	left: 50%;
+	top: 42%;
+	width: min(48vw, 600px);
+	transform: translate(-50%, -50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+.dsbd-whale-wrap {
+	position: relative;
+	width: 100%;
+	aspect-ratio: 320 / 200;
+	display: grid;
+	place-items: center;
+	transform: scale(1);
+	will-change: transform;
+}
+
+.dsbd-glow {
+	position: absolute;
+	width: 62%;
+	aspect-ratio: 1;
+	border-radius: 50%;
+	background: radial-gradient(closest-side, rgba(91, 140, 255, 0.3), rgba(91, 140, 255, 0.06) 48%, rgba(91, 140, 255, 0) 72%);
+	filter: blur(6px);
+	opacity: 0;
+	animation: dsbd-glow 2400ms ease-out 300ms forwards;
+}
+
+@keyframes dsbd-glow {
+	0% {
+		opacity: 0;
+		transform: scale(0.82);
+	}
+	45% {
+		opacity: 0.9;
+	}
+	100% {
+		opacity: 0.55;
+		transform: scale(1.04);
+	}
+}
+
+.dsbd-rings {
+	position: absolute;
+	inset: 0;
+	display: grid;
+	place-items: center;
+}
+
+.dsbd-rings i {
+	position: absolute;
+	width: 46%;
+	aspect-ratio: 1;
+	border: 1px solid rgba(126, 180, 255, 0.42);
+	border-radius: 50%;
+	opacity: 0;
+	animation: dsbd-ring 3200ms cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+}
+
+.dsbd-rings i:nth-child(2) {
+	animation-delay: 1100ms;
+	border-color: rgba(143, 240, 255, 0.32);
+}
+
+.dsbd-rings i:nth-child(3) {
+	animation-delay: 2200ms;
+	border-color: rgba(91, 140, 255, 0.24);
+}
+
+@keyframes dsbd-ring {
+	0% {
+		transform: scale(0.52);
+		opacity: 0;
+	}
+	12% {
+		opacity: 0.62;
+	}
+	70% {
+		opacity: 0.18;
+	}
+	100% {
+		transform: scale(2.05);
+		opacity: 0;
+	}
+}
+
+.dsbd-whale {
+	position: relative;
+	width: 100%;
+	height: 100%;
+	overflow: visible;
+	opacity: 0;
+	transform: translateY(12px) scale(0.985);
+	animation: dsbd-whale-in 1300ms cubic-bezier(0.2, 0.8, 0.2, 1) 120ms forwards;
+}
+
+@keyframes dsbd-whale-in {
+	0% {
+		opacity: 0;
+		transform: translateY(12px) scale(0.985);
+		filter: blur(6px);
+	}
+	60% {
+		opacity: 1;
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+		filter: blur(0);
+	}
+}
+
+.dsbd-whale path,
+.dsbd-whale circle {
+	fill: none;
+	stroke: url(#dsbd-stroke);
+	stroke-width: 1.7;
+	stroke-linecap: round;
+	stroke-linejoin: round;
+	vector-effect: non-scaling-stroke;
+	filter: drop-shadow(0 0 6px rgba(110, 170, 255, 0.45));
+}
+
+.dsbd-whale .dsbd-w-body,
+.dsbd-whale .dsbd-w-tail {
+	fill: url(#dsbd-body);
+	fill-opacity: 0;
+	stroke-width: 1.9;
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+	animation:
+		dsbd-draw 1500ms cubic-bezier(0.35, 0.7, 0.2, 1) 220ms forwards,
+		dsbd-fill-in 1000ms ease-out 700ms forwards;
+}
+
+.dsbd-whale .dsbd-w-tail {
+	animation-delay: 620ms, 900ms;
+}
+
+.dsbd-whale .dsbd-w-fin,
+.dsbd-whale .dsbd-w-fin2 {
+	fill: rgba(91, 140, 255, 0.16);
+	fill-opacity: 0;
+	stroke-width: 1.35;
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+	animation:
+		dsbd-draw 620ms cubic-bezier(0.3, 0.7, 0.2, 1) 900ms forwards,
+		dsbd-fill-in 460ms ease-out 1100ms forwards;
+}
+
+.dsbd-whale .dsbd-w-fin2 {
+	animation-delay: 800ms, 1000ms;
+}
+
+.dsbd-whale .dsbd-w-line {
+	stroke-width: 1;
+	opacity: 0;
+	animation: dsbd-fade 600ms ease-out 1150ms forwards;
+}
+
+.dsbd-whale .dsbd-w-mouth {
+	stroke-width: 1.4;
+	stroke-dasharray: 1;
+	stroke-dashoffset: 1;
+	animation: dsbd-draw 500ms ease-out 1100ms forwards;
+}
+
+.dsbd-whale .dsbd-w-blow {
+	stroke-width: 1.2;
+	opacity: 0;
+	animation: dsbd-fade 600ms ease-out 1100ms forwards;
+}
+
+.dsbd-whale .dsbd-w-spray {
+	opacity: 0;
+	animation: dsbd-spray 900ms ease-out 1200ms forwards;
+}
+
+.dsbd-whale .dsbd-w-spray circle {
+	fill: var(--dsbd-ice);
+	stroke: none;
+	opacity: 0.6;
+	filter: drop-shadow(0 0 5px rgba(143, 240, 255, 0.7));
+}
+
+@keyframes dsbd-spray {
+	from {
+		opacity: 0;
+		transform: translateY(5px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+.dsbd-whale .dsbd-w-eye {
+	fill: var(--dsbd-ice);
+	stroke: none;
+	opacity: 0;
+	animation: dsbd-fade 500ms ease-out 1200ms forwards;
+	filter: drop-shadow(0 0 6px rgba(143, 240, 255, 0.9));
+}
+
+@keyframes dsbd-fill-in {
+	to {
+		fill-opacity: 1;
+	}
+}
+
+@keyframes dsbd-draw {
+	to {
+		stroke-dashoffset: 0;
+	}
+}
+
+.dsbd-scan {
+	position: absolute;
+	top: 8%;
+	bottom: 12%;
+	left: 50%;
+	width: 26%;
+	margin-left: -13%;
+	background: linear-gradient(90deg, rgba(143, 240, 255, 0) 0%, rgba(143, 240, 255, 0.16) 48%, rgba(255, 255, 255, 0.55) 50%, rgba(143, 240, 255, 0.16) 52%, rgba(143, 240, 255, 0) 100%);
+	-webkit-mask-image: radial-gradient(60% 55% at 50% 50%, #000 30%, transparent 100%);
+	mask-image: radial-gradient(60% 55% at 50% 50%, #000 30%, transparent 100%);
+	opacity: 0;
+	animation: dsbd-scan 1700ms cubic-bezier(0.4, 0, 0.2, 1) 900ms forwards;
+	pointer-events: none;
+}
+
+@keyframes dsbd-scan {
+	0% {
+		opacity: 0;
+		transform: translateX(-190%);
+	}
+	18% {
+		opacity: 0.9;
+	}
+	100% {
+		opacity: 0;
+		transform: translateX(190%);
+	}
+}
+
+/* -------------------------------------------------------------------- copy */
+
+.dsbd-copy {
+	margin-top: clamp(10px, 2.4vh, 26px);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 14px;
+	text-align: center;
+}
+
+.dsbd-wordmark {
+	margin: 0;
+	font-family: var(--dsbd-sans);
+	font-size: clamp(20px, 2.1vw, 34px);
+	font-weight: 300;
+	letter-spacing: 0.42em;
+	text-indent: 0.42em;
+	color: #f3f8ff;
+	opacity: 0;
+	animation: dsbd-wordmark 1400ms cubic-bezier(0.2, 0.8, 0.2, 1) 760ms forwards;
+	text-shadow: 0 0 26px rgba(120, 170, 255, 0.4);
+}
+
+@keyframes dsbd-wordmark {
+	0% {
+		opacity: 0;
+		letter-spacing: 0.66em;
+		text-indent: 0.66em;
+		filter: blur(7px);
+	}
+	100% {
+		opacity: 1;
+		letter-spacing: 0.42em;
+		text-indent: 0.42em;
+		filter: blur(0);
+	}
+}
+
+.dsbd-tagline {
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	font-family: var(--dsbd-mono);
+	font-size: 10px;
+	letter-spacing: 0.26em;
+	color: var(--dsbd-dim);
+	opacity: 0;
+	animation: dsbd-fade-up 900ms ease-out 1500ms forwards;
+}
+
+.dsbd-tagline i {
+	display: block;
+	width: clamp(28px, 4vw, 56px);
+	height: 1px;
+	background: linear-gradient(90deg, transparent, rgba(143, 240, 255, 0.7), transparent);
+}
+
+/* --------------------------------------------------------------------- hud */
+
+.dsbd-hud {
+	position: absolute;
+	left: clamp(24px, 4.6vw, 66px);
+	bottom: clamp(70px, 9vh, 96px);
+	width: min(360px, 38vw);
+	opacity: 0;
+	animation: dsbd-fade 800ms ease-out 900ms forwards;
+}
+
+.dsbd-log {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 9px;
+	font-family: var(--dsbd-mono);
+	font-size: 10.5px;
+	letter-spacing: 0.1em;
+	color: var(--dsbd-dim);
+}
+
+.dsbd-log li {
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
+	opacity: 0;
+	transform: translateY(5px);
+	animation: dsbd-fade-up 620ms ease-out forwards;
+	animation-delay: calc(1000ms + var(--i) * 420ms);
+}
+
+.dsbd-log b {
+	font-weight: 400;
+	color: var(--dsbd-faint);
+}
+
+.dsbd-log span {
+	flex: 0 0 auto;
+}
+
+.dsbd-log li::after {
+	content: "";
+	flex: 1 1 auto;
+	order: 2;
+	height: 1px;
+	margin-bottom: 3px;
+	border-bottom: 1px dotted rgba(160, 190, 240, 0.24);
+}
+
+.dsbd-log em {
+	order: 3;
+	font-style: normal;
+	color: var(--dsbd-ice);
+	letter-spacing: 0.16em;
+	opacity: 0;
+	animation: dsbd-fade 400ms ease-out forwards;
+	animation-delay: calc(1300ms + var(--i) * 420ms);
+}
+
+/* ------------------------------------------------------------------ bottom */
+
+.dsbd-meter {
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 2px;
+	background: rgba(120, 160, 230, 0.14);
+}
+
+.dsbd-meter .dsbd-bar {
+	position: absolute;
+	inset: 0;
+}
+
+.dsbd-meter .dsbd-bar i {
+	display: block;
+	width: 0;
+	height: 100%;
+	background: linear-gradient(90deg, rgba(91, 140, 255, 0.5) 0%, var(--dsbd-accent) 55%, var(--dsbd-ice) 100%);
+	box-shadow: 0 0 14px 1px rgba(120, 200, 255, 0.6);
+	transition: width 260ms cubic-bezier(0.2, 0.9, 0.2, 1);
+}
+
+.dsbd-readout {
+	position: absolute;
+	right: clamp(24px, 4.6vw, 66px);
+	bottom: clamp(26px, 4.6vh, 46px);
+	display: flex;
+	align-items: flex-end;
+	gap: 18px;
+	opacity: 0;
+	animation: dsbd-fade 900ms ease-out 700ms forwards;
+}
+
+.dsbd-phase {
+	font-family: var(--dsbd-mono);
+	font-size: 9.5px;
+	letter-spacing: 0.24em;
+	color: var(--dsbd-dim);
+	padding-bottom: 7px;
+}
+
+.dsbd-pct {
+	font-family: var(--dsbd-sans);
+	font-size: clamp(30px, 3vw, 46px);
+	font-weight: 200;
+	line-height: 0.9;
+	letter-spacing: -0.02em;
+	color: #f2f8ff;
+	font-variant-numeric: tabular-nums;
+	text-shadow: 0 0 24px rgba(120, 180, 255, 0.35);
+}
+
+.dsbd-pct i {
+	font-style: normal;
+	font-size: 0.44em;
+	margin-left: 2px;
+	color: var(--dsbd-faint);
+}
+
+.dsbd-skip {
+	position: absolute;
+	left: 50%;
+	bottom: clamp(22px, 4vh, 40px);
+	transform: translateX(-50%);
+	font-family: var(--dsbd-mono);
+	font-size: 9px;
+	letter-spacing: 0.3em;
+	color: rgba(200, 220, 255, 0.34);
+	opacity: 0;
+	animation: dsbd-fade 800ms ease-out 1900ms forwards;
+	white-space: nowrap;
+}
+
+.dsbd-flash {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(circle at 50% 44%, rgba(255, 255, 255, 0.9) 0%, rgba(150, 200, 255, 0.32) 26%, rgba(3, 6, 15, 0) 62%);
+	mix-blend-mode: screen;
+	opacity: 0;
+	pointer-events: none;
+}
+
+[data-dsh-boot-dive][data-dsbd-exit] .dsbd-flash {
+	animation: dsbd-flash 620ms ease-out forwards;
+}
+
+@keyframes dsbd-flash {
+	0% {
+		opacity: 0;
+	}
+	14% {
+		opacity: 0.72;
+	}
+	100% {
+		opacity: 0;
+	}
+}
+
+/* --------------------------------------------------------------- utilities */
+
+@keyframes dsbd-fade {
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes dsbd-fade-up {
+	from {
+		opacity: 0;
+		transform: translateY(6px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* --------------------------------------------------------------- responsive */
+
+@media (max-width: 820px) {
+	.dsbd-hero {
+		width: min(78vw, 520px);
+		top: 40%;
+	}
+	.dsbd-hud {
+		display: none;
+	}
+	.dsbd-brand-text,
+	.dsbd-selfcheck {
+		display: none;
+	}
+	.dsbd-phase {
+		display: none;
+	}
+	.dsbd-skip {
+		bottom: clamp(74px, 10vh, 96px);
+	}
+}
+
+@media (max-height: 620px) {
+	.dsbd-hero {
+		top: 38%;
+	}
+	.dsbd-hud {
+		display: none;
+	}
+}
+
+/* ---------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+	.dsbd-aurora,
+	.dsbd-stars i,
+	.dsbd-rings i,
+	.dsbd-scan,
+	.dsbd-glow {
+		animation: none !important;
+	}
+	.dsbd-stars,
+	.dsbd-rings,
+	.dsbd-scan {
+		display: none;
+	}
+	.dsbd-glow {
+		opacity: 0.45;
+	}
+	.dsbd-whale,
+	.dsbd-wordmark,
+	.dsbd-tagline,
+	.dsbd-brand,
+	.dsbd-selfcheck,
+	.dsbd-hud,
+	.dsbd-log li,
+	.dsbd-log em,
+	.dsbd-readout,
+	.dsbd-skip,
+	.dsbd-horizon,
+	.dsbd-grid {
+		animation: none !important;
+		opacity: 1;
+		transform: none;
+		filter: none;
+	}
+	.dsbd-whale path {
+		stroke-dashoffset: 0;
+		animation: none !important;
+	}
+	.dsbd-whale .dsbd-w-body,
+	.dsbd-whale .dsbd-w-tail,
+	.dsbd-whale .dsbd-w-fin,
+	.dsbd-whale .dsbd-w-fin2 {
+		fill-opacity: 1;
+	}
+	.dsbd-whale .dsbd-w-line {
+		opacity: 1;
+	}
+	.dsbd-whale .dsbd-w-spray {
+		opacity: 0.65;
+	}
+	.dsbd-whale .dsbd-w-eye {
+		opacity: 1;
+	}
+	.dsbd-log li {
+		transform: none;
+	}
+	[data-dsh-boot-dive][data-dsbd-exit] .dsbd-flash {
+		animation: none;
+	}
+}
+
+</style>
+</head>
+<body>
+<div data-dsh-boot-dive data-dsbd data-min="2800" data-cap="14000" data-skip="1" role="status" aria-label="DeepSeek Harness 正在启动">
+	<div class="dsbd-sky" aria-hidden="true">
+		<i class="dsbd-aurora a1"></i>
+		<i class="dsbd-aurora a2"></i>
+		<i class="dsbd-horizon"></i>
+		<div class="dsbd-grid"></div>
+	</div>
+
+	<div class="dsbd-stars" aria-hidden="true">
+		<i style="--x: 8%; --y: 22%; --s: 2px; --d: 200ms; --t: 5.2s"></i>
+		<i style="--x: 15%; --y: 64%; --s: 1px; --d: 600ms; --t: 4.4s"></i>
+		<i style="--x: 22%; --y: 38%; --s: 1.5px; --d: 380ms; --t: 6.1s"></i>
+		<i style="--x: 29%; --y: 82%; --s: 1px; --d: 900ms; --t: 5.6s"></i>
+		<i style="--x: 35%; --y: 16%; --s: 2px; --d: 260ms; --t: 4.8s"></i>
+		<i style="--x: 41%; --y: 72%; --s: 1px; --d: 720ms; --t: 6.4s"></i>
+		<i style="--x: 48%; --y: 26%; --s: 1.5px; --d: 480ms; --t: 5.1s"></i>
+		<i style="--x: 54%; --y: 86%; --s: 2px; --d: 1100ms; --t: 4.2s"></i>
+		<i style="--x: 61%; --y: 12%; --s: 1px; --d: 340ms; --t: 6.8s"></i>
+		<i style="--x: 67%; --y: 58%; --s: 2px; --d: 640ms; --t: 5.4s"></i>
+		<i style="--x: 73%; --y: 30%; --s: 1px; --d: 820ms; --t: 4.6s"></i>
+		<i style="--x: 79%; --y: 78%; --s: 1.5px; --d: 180ms; --t: 5.9s"></i>
+		<i style="--x: 85%; --y: 46%; --s: 2px; --d: 560ms; --t: 6.2s"></i>
+		<i style="--x: 91%; --y: 20%; --s: 1px; --d: 960ms; --t: 5.3s"></i>
+		<i style="--x: 95%; --y: 68%; --s: 1.5px; --d: 420ms; --t: 4.9s"></i>
+		<i style="--x: 12%; --y: 88%; --s: 1px; --d: 1040ms; --t: 6.6s"></i>
+		<i style="--x: 57%; --y: 48%; --s: 1px; --d: 240ms; --t: 5.8s"></i>
+		<i style="--x: 38%; --y: 92%; --s: 1.5px; --d: 780ms; --t: 4.5s"></i>
+	</div>
+
+	<header class="dsbd-brand" aria-hidden="true">
+		<span class="dsbd-logo">DS</span>
+		<span class="dsbd-brand-text">DEEPSEEK HARNESS<em>BOOT SEQUENCE 01</em></span>
+	</header>
+
+	<div class="dsbd-selfcheck" aria-hidden="true">
+		<span>SELF-CHECK <b>04</b>/04</span>
+		<span class="bars"><i></i><i></i><i></i><i></i></span>
+	</div>
+
+	<div class="dsbd-hero">
+		<div class="dsbd-whale-wrap" aria-hidden="true">
+			<div class="dsbd-glow"></div>
+			<div class="dsbd-rings"><i></i><i></i><i></i></div>
+			<svg class="dsbd-whale" viewBox="0 0 320 200" xmlns="http://www.w3.org/2000/svg" focusable="false">
+				<defs>
+					<linearGradient id="dsbd-stroke" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0" stop-color="#9beeff" />
+						<stop offset="0.52" stop-color="#5b8cff" />
+						<stop offset="1" stop-color="#cfd9ff" />
+					</linearGradient>
+					<linearGradient id="dsbd-body" gradientUnits="userSpaceOnUse" x1="150" y1="55" x2="165" y2="155">
+						<stop offset="0" stop-color="#8db8ff" stop-opacity="0.4" />
+						<stop offset="0.55" stop-color="#3f6ce0" stop-opacity="0.2" />
+						<stop offset="1" stop-color="#1f3f92" stop-opacity="0.07" />
+					</linearGradient>
+				</defs>
+				<path class="dsbd-w-blow" pathLength="1" d="M244 77 C248 75 254 75 258 77" />
+				<g class="dsbd-w-spray">
+					<circle cx="248" cy="68" r="1.6" />
+					<circle cx="242" cy="58" r="1.2" />
+					<circle cx="254" cy="56" r="2" />
+					<circle cx="236" cy="48" r="1" />
+					<circle cx="250" cy="44" r="1.5" />
+					<circle cx="244" cy="34" r="0.9" />
+				</g>
+				<path class="dsbd-w-fin2" pathLength="1" d="M178 68 C184 55 194 47 206 44 C202 52 198 60 196 69 Z" />
+				<path class="dsbd-w-body" pathLength="1" d="M286 104 C284 92 272 82 254 76 C228 67 198 62 168 63 C136 64 106 73 84 89 C74 96 68 102 62 106 C48 94 34 78 20 62 C14 55 8 48 2 46 C4 60 8 76 14 90 C18 100 22 107 26 113 C22 120 17 133 12 146 C8 158 4 170 2 178 C8 172 20 158 32 145 C44 137 54 131 62 127 C74 136 84 140 100 143 C128 153 166 154 198 146 C232 138 264 126 284 114 C288 112 289 108 286 104 Z" />
+				<path class="dsbd-w-fin" pathLength="1" d="M214 140 C208 152 198 162 184 170 C188 156 192 146 196 138 Z" />
+				<path class="dsbd-w-line" pathLength="1" d="M120 140 C150 149 190 149 218 141" />
+				<path class="dsbd-w-line" pathLength="1" d="M132 130 C158 137 188 137 210 130" />
+				<path class="dsbd-w-mouth" pathLength="1" d="M250 120 C262 124 274 122 282 114" />
+				<circle class="dsbd-w-eye" cx="252" cy="98" r="2.7" />
+			</svg>
+			<div class="dsbd-scan"></div>
+		</div>
+
+		<div class="dsbd-copy">
+			<h1 class="dsbd-wordmark">DEEPSEEK</h1>
+			<p class="dsbd-tagline"><span>DIVE SEQUENCE</span><i></i><span>深潜启动序列</span></p>
+		</div>
+	</div>
+
+	<div class="dsbd-hud" aria-hidden="true">
+		<ul class="dsbd-log">
+			<li style="--i: 0"><b>01</b><span>KERNEL / 内核完整性</span><em>OK</em></li>
+			<li style="--i: 1"><b>02</b><span>PLUGINS / 插件图装载</span><em>OK</em></li>
+			<li style="--i: 2"><b>03</b><span>SESSION / 会话上下文</span><em>OK</em></li>
+			<li style="--i: 3"><b>04</b><span>MODEL / 链路握手</span><em>SYNC</em></li>
+		</ul>
+	</div>
+
+	<div class="dsbd-readout" aria-hidden="true">
+		<span class="dsbd-phase">初始化内核</span>
+		<span class="dsbd-pct">0<i>%</i></span>
+	</div>
+
+	<div class="dsbd-skip" aria-hidden="true">点击任意处 或 ESC 跳过</div>
+
+	<div class="dsbd-meter" aria-hidden="true"><div class="dsbd-bar"><i></i></div></div>
+
+	<div class="dsbd-flash" aria-hidden="true"></div>
+</div>
+
+<div id="root"><div class="fake-boot">BOOTING DEEPSEEK HARNESS…</div></div>
+<template id="app-template">
+<div class="app">
+	<aside class="side">
+		<div class="side-brand"><span class="mark">DS</span>DeepSeek Harness</div>
+		<button class="new">＋ 新建对话</button>
+		<div class="side-label">今天</div>
+		<div class="side-item active">深潜启动序列怎么做</div>
+		<div class="side-item">开机动画为什么不能等插件加载</div>
+		<div class="side-item">index-inject 的三行注入</div>
+		<div class="side-label">昨天</div>
+		<div class="side-item">桌面端和 dsh web 的差别</div>
+		<div class="side-item">把首帧挡在 Loading 卡片前面</div>
+		<div class="side-foot"><span>设置</span><span>插件</span><span>关于</span></div>
+	</aside>
+	<main class="main">
+		<header class="top"><span>DeepSeek Harness</span><span class="pill">deepseek-flash</span></header>
+		<section class="empty">
+			<div class="glyph">DS</div>
+			<h1>今天想聊点什么？</h1>
+			<p>打开软件的那两秒，也可以很好看。</p>
+			<div class="composer"><span>给 DeepSeek 发送消息…</span><kbd>Enter</kbd></div>
+		</section>
+	</main>
+</div></template>
+<script>
+(function () {
+	var params = new URLSearchParams(location.search);
+	var boot = document.querySelector('[data-dsbd]');
+	if (boot !== null && params.has('hold')) {
+		boot.setAttribute('data-min', '600000');
+		boot.setAttribute('data-cap', '600000');
+	}
+	var video = document.querySelector('.dsbdv-video');
+	var videoRoot = document.querySelector('[data-dsbdv]');
+	if (videoRoot !== null && params.get('sound') === '0') videoRoot.setAttribute('data-sound', '0');
+	if (video !== null && params.has('t')) {
+		video.addEventListener('loadedmetadata', function () {
+			video.currentTime = Number(params.get('t')) || 0;
+			video.pause();
+		});
+	}
+	window.setTimeout(function () {
+		var root = document.getElementById('root');
+		var template = document.getElementById('app-template');
+		if (root !== null && template !== null) root.innerHTML = template.innerHTML;
+	}, 900);
+})();
+</script>
+<script>
+/*
+ * dsh-boot-dive — handover
+ *
+ * The visual sequence is pure CSS: this script only counts the percentage and
+ * decides when the layer may leave:
+ *
+ *   1. the app mounted (its own [data-dsh-boot] card is gone, or #root filled),
+ *      but never before minShowMs — the opening motion gets to finish;
+ *   2. the hard cap — a slow or broken app can never be locked out;
+ *   3. the user skipped — click / Esc / Space / Enter.
+ *
+ * If this script never runs, the CSS failsafe in boot.css hides the layer at
+ * cap + 1.5s anyway.
+ */
+(function () {
+	var root = document.querySelector('[data-dsbd]');
+	if (root === null || root.getAttribute('data-dsbd-active') === '1') return;
+	root.setAttribute('data-dsbd-active', '1');
+
+	var MIN = clamp(Number(root.getAttribute('data-min')) || 2600, 300, 20000);
+	var CAP = clamp(Number(root.getAttribute('data-cap')) || 9000, 1000, 60000);
+	var ALLOW_SKIP = root.getAttribute('data-skip') === '1';
+
+	var started = Date.now();
+	var released = false;
+	var sawBootCard = false;
+	var fill = root.querySelector('.dsbd-bar i');
+	var pct = root.querySelector('.dsbd-pct');
+	var phase = root.querySelector('.dsbd-phase');
+
+	var pollId = 0;
+	var capId = 0;
+	var minId = 0;
+	var rafId = 0;
+
+	var PHASES = [
+		[0, '初始化内核'],
+		[46, '装载插件图'],
+		[74, '恢复会话'],
+		[93, '链路握手']
+	];
+	var lastPhase = '';
+
+	function clamp(value, low, high) {
+		return Math.min(high, Math.max(low, value));
+	}
+
+	function setProgress(value) {
+		var rounded = Math.round(clamp(value, 0, 100));
+		if (fill !== null) fill.style.width = rounded + '%';
+		if (pct !== null && pct.firstChild !== null) pct.firstChild.nodeValue = String(rounded);
+	}
+
+	function setPhase(value) {
+		var label = PHASES[0][1];
+		for (var i = 0; i < PHASES.length; i++) {
+			if (value >= PHASES[i][0]) label = PHASES[i][1];
+		}
+		if (phase !== null && label !== lastPhase) {
+			lastPhase = label;
+			phase.textContent = label;
+		}
+	}
+
+	function tick() {
+		if (released) return;
+		var t = Math.min(1, (Date.now() - started) / MIN);
+		var eased = t * t * (3 - 2 * t);
+		var value = 92 * eased;
+		setProgress(value);
+		setPhase(value);
+		rafId = window.requestAnimationFrame(tick);
+	}
+
+	function appMounted() {
+		var card = document.querySelector('[data-dsh-boot]');
+		if (card !== null) {
+			sawBootCard = true;
+			return false;
+		}
+		var host = document.getElementById('root');
+		if (host === null || host.firstElementChild === null) return false;
+		if (!sawBootCard && Date.now() - started < MIN) return false;
+		return true;
+	}
+
+	function check() {
+		if (released) return;
+		if (appMounted()) requestRelease();
+	}
+
+	function requestRelease() {
+		if (released || minId !== 0) return;
+		var remain = MIN - (Date.now() - started);
+		if (remain <= 0) release();
+		else minId = window.setTimeout(release, remain);
+	}
+
+	function release() {
+		if (released) return;
+		released = true;
+
+		window.clearInterval(pollId);
+		window.clearTimeout(capId);
+		window.clearTimeout(minId);
+		window.cancelAnimationFrame(rafId);
+
+		setProgress(100);
+		if (phase !== null) phase.textContent = '就绪 · READY';
+
+		root.setAttribute('data-dsbd-exit', '');
+		root.style.animation = 'none';
+
+		var drop = function () {
+			if (root.parentNode !== null) root.parentNode.removeChild(root);
+		};
+		var onEnd = function (event) {
+			if (event.target !== root || event.propertyName !== 'opacity') return;
+			root.removeEventListener('transitionend', onEnd);
+			drop();
+		};
+		root.addEventListener('transitionend', onEnd);
+		window.setTimeout(drop, 900);
+	}
+
+	if (ALLOW_SKIP) {
+		root.addEventListener('pointerdown', release);
+		window.addEventListener(
+			'keydown',
+			function (event) {
+				if (event.key === 'Escape' || event.key === ' ' || event.key === 'Enter') {
+					event.preventDefault();
+					release();
+				}
+			},
+			true
+		);
+	}
+
+	setProgress(0);
+	tick();
+	pollId = window.setInterval(check, 120);
+	check();
+	capId = window.setTimeout(release, CAP);
+})();
+
+</script>
+</body>
+</html>

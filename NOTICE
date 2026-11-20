@@ -1,0 +1,23 @@
+dsh-boot-dive
+=============
+
+Code, styles and the pure-CSS whale sequence
+--------------------------------------------
+Copyright (c) 2026 dsh-boot-dive contributors.
+Licensed under the MIT License; see LICENSE.
+
+Boot film
+---------
+`assets/video/boot.mp4` is a re-encoded derivative of
+`assets/videos/1.mp4` from https://github.com/lxj5820/dsh-boot-animation
+(that repository is MIT licensed; Copyright (c) 2026 dsh-boot-animation
+contributors). Changes made here: 1280x720 H.264 CRF 26, AAC 128 kbps with
+loudness normalisation, `moov` moved to the front (faststart), and the clip
+was cut to the 8.1 s used by this plugin.
+
+The character and artwork in the film belong to the original author. This
+repository only redistributes the clip for use with the DeepSeek Harness
+boot splash and does not claim ownership of it.
+
+"DeepSeek" and "DeepSeek Harness" are trademarks of their respective owners.
+This project is unofficial and is not affiliated with DeepSeek.
